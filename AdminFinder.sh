@@ -82,7 +82,6 @@ main() {
     else
     echo -en "${n}[${r}!${n}] ${r}Not Found File\n${n}[${g}*${n}] ${g} Wait Downloading List File...\n${n}"
     curl -s -o list.txt https://raw.githubusercontent.com/DH-Alamin/AdminFinder/main/list.txt
-    exit 1
     fi
     clear; banner
     echo -en "\n${n}[${g}*${n}] ${c}Enter Site Link ${n}(${c}ex: https://target.com${n}) : ${g}"
