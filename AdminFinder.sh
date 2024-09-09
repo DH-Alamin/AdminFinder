@@ -20,7 +20,7 @@ final() {
     while read -r result; do
     echo -en "\n${n}[${g}*${n}] ${g}FOUND${n}: ${g} ${result}${n}\n"
     done < ".ok.txt"
-    if [ -f .ok.txt ];
+    if [ -f .redirect.txt ];
     then
     echo -e "\n\n${n}[${g}*${n}] ${g}All Found REDIRECT URL${n}\n"
     while read -r result; do
