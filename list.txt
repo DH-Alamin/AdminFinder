@@ -8,6 +8,7 @@ login/login.php
 login.php
 login-redirect/
 logins/
+cpanel
 admin/
 Admin/
 ADMIN/
