@@ -20,10 +20,15 @@ final() {
     while read -r result; do
     echo -en "\n${n}[${g}*${n}] ${g}FOUND${n}: ${g} ${result}${n}\n"
     done < ".ok.txt"
+    if [ -f .ok.txt ];
+    then
     echo -e "\n\n${n}[${g}*${n}] ${g}All Found REDIRECT URL${n}\n"
     while read -r result; do
     echo -en "\n${n}[${b}+${n}] ${b}REDIRECT${n}: ${b} ${result}${n}\n"
     done < ".redirect.txt"
+    else
+    echo ""
+    fi
     else
     echo -en "${n}[${r}!${n}] ${r} No Found Admin Panel Site"
     fi
