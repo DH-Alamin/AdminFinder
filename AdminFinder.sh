@@ -13,25 +13,23 @@ banner
 
 
 final() {
-    if [ -f ok.txt ];
-    then
     clear; banner
-    echo -e "\n\n\n"
-    while read -r result; do
-    echo -en "\n${n}[${c}*${g}FOUND${c}*${n}]${c} Site${n}: ${g} ${result}${n}\n"
-    done < "ok.txt"
-    if [ -f redirect.txt ];
+    if [ -f .ok.txt ];
     then
+    echo -e "\n\n${n}[${g}*${n}] ${g}All Found Admin Panel URL${n}\n"
     while read -r result; do
-    echo -en "\n${n}[${c}+${g}REDIRECT${c}+${n}]${c} Site${n}: ${g} ${result}${n}\n"
-    done < "redirect.txt"
+    echo -en "\n${n}[${g}*${n}] ${g}FOUND${n}: ${g} ${result}${n}\n"
+    done < ".ok.txt"
+    echo -e "\n\n${n}[${g}*${n}] ${g}All Found REDIRECT URL${n}\n"
+    while read -r result; do
+    echo -en "\n${n}[${b}+${n}] ${b}REDIRECT${n}: ${b} ${result}${n}\n"
+    done < ".redirect.txt"
     else
-    echo ""
-    fi     
-    else
-    echo ""
+    echo -en "${n}[${r}!${n}] ${r} No Found Admin Panel Site"
     fi
 }
+
+
 
 trap ctrl_c INT
 
@@ -43,32 +41,57 @@ ctrl_c() {
 }
 
 find() {
-    rm -rf ok.txt redirect.txt
     clear; banner
-    echo -en "${n}\n\n[${g}*${n}] ${c}TARGET${n}:${g} ${link}\n\n\n${n}"
+    echo -en "${n}\n\n[${g}*${n}] ${c}TARGET${n}:${g} ${link}\n\n\n${n}[${g}*${n}]${b} Press CTRL+C For Stop Finding...\n${n}"
     while read -r list; do
     result=$(curl --write-out '%{http_code}' --silent  --output /dev/null "${link}/${list}")
     if [[ ${result} -ge 200 && ${result} -le 299 ]];
     then
-    echo -en "\n${n}[${c}*${g}FOUND${c}*${n}] ${c}Site: ${g}${link}/${list}\n${n}"
-    echo "${link}/${list}" >> ok.txt 
+    echo -en "\n${n}[${g}*${n}] ${g}FOUND${n}: ${g}${link}/${list}\n${n}"
+    echo "${link}/${list}" >> .ok.txt 
     fi
     if [[ ${result} -ge 300 && ${result} -le 399 ]];
     then
-    echo -en "\n${n}[${c}+${b}REDIRECT${c}+${n}] ${c}Site: ${g}${link}/${list}\n${n}"
-    echo "${link}/${list}" >> redirect.txt 
+    echo -en "\n${n}[${b}+${n}] ${b}REDIRECT${n}: ${b}${link}/${list}\n${n}"
+    echo "${link}/${list}" >> .redirect.txt 
     fi
     if [[ ${result} -ge 400 && ${result} -le 499 ]];
     then
-    echo -en "\n${n}[${c}!${r}ERROR${c}!${n}] ${c}Site: ${r}${link}/${list}${n}\n"
+    echo -en "\n${n}[${r}!${n}] ${r}ERROR${n}: ${r}${link}/${list}${n}\n"
     fi
-    done < "list.txt"
+    done < "${wlist}"
     final
+    if [ -f .ok.txt ];
+    then
+    echo ""
+    else
+    echo -en "\n${n}[${g}*${n}] ${g}Type y For Try Custom Wordlist ${b}"
+    read yn
+    echo -en "${n}"
+    case $yn in
+    y) echo -en "\n${n}[${g}*${n}] ${g}Custom Wordlist Path${n}: ${b}"
+    read path
+    echo -en "${n}"
+    wlist="${path}"
+    find
+    ;;
+    Y) echo -en "\n${n}[${g}*${n}] ${g}Custom Wordlist Path${n}: ${b}"
+    read path
+    echo -en "${n}"
+    wlist="${path}"
+    find
+    ;;
+    *) echo -en "\n${n}[${r}!${n}]${r} Wrong Type"
+    ;;
+    esac
+    fi
     exit
 }
 
 
 main() {
+    wlist="list.txt"
+    rm -rf .ok.txt
     if [[ $(command -v curl) ]];
     then
     echo ""
@@ -84,22 +107,23 @@ main() {
     curl -s -o list.txt https://raw.githubusercontent.com/DH-Alamin/AdminFinder/main/list.txt
     fi
     clear; banner
-    echo -en "\n${n}[${g}*${n}] ${c}Enter Site Link ${n}(${c}ex: https://target.com${n}) : ${g}"
-    read link
-    if [[ -n ${link} ]];
+    echo -en "\n${n}[${g}*${n}] ${g}Enter Site Link${n}: ${b}"
+    read url
+    link=$(echo ${url} | sed 's!http[s]*://!!g' | cut -d '/' -f1)
+    if [[ -n ${url} ]];
     then
     echo -en ""
     else
-    echo -en "\n${n}[${r}-${n}] ${r}You Didn't Enter Anything!!!\n\n${c}"
+    echo -en "\n${n}[${r}-${n}] ${r}You Didn't Type Anything!!!\n\n${c}"
     echo -en "${n}[${g}*${n}]${g} Press Enter To Continue...\n${n}"
     read -r -s -p $""
     main
     fi
-    if curl --output /dev/null --silent --head --fail "${link}";
+    if curl --output /dev/null --silent --head --fail "${url}";
     then
     find
     else
-    echo -en "\n\n${n}[${r}!${n}] ${c}Site: ${r}${link} Site Not Found\n\n\n${n}[${g} +${n} ] ${g}Check URL & Try Again\n\n${c}"
+    echo -en "\n\n${n}[${r}!${n}] ${c}Site: ${r}${url} Site Not Found\n\n\n${n}[${g}+${n}] ${g}Check URL & Try Again\n\n${c}"
     echo -en "${n}[${g}*${n}]${g} Press Enter To Continue...\n${n}"
     read -r -s -p $""
     main
@@ -108,3 +132,4 @@ main() {
 
 
 main
+rm -rf .ok.txt redirect.txt
